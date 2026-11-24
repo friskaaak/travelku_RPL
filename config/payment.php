@@ -17,7 +17,11 @@ return [
         // Hanya dipakai saat PAYMENT_MODE=production dan PAYMENT_PROVIDER=midtrans.
     'midtrans' => [
         'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
     ],
+
+    // Metode yang aktif saat PAYMENT_MODE bukan demo.
+    'live_methods' => ['dana'],
 
     // Batas waktu pembayaran (menit) sejak tagihan dibuat.
     'expiry_minutes' => (int) env('PAYMENT_EXPIRY_MINUTES', 60),

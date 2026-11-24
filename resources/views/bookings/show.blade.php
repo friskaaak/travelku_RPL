@@ -81,6 +81,8 @@
                 @endif
             </div>
 
+            @include('bookings._cancel', ['booking' => $booking, 'quote' => $quote])
+            @include('bookings._timeline', ['timeline' => $timeline])
             @if ($booking->status === 'Confirmed')
                 @include('documents._email-status', ['booking' => $booking])
             @endif

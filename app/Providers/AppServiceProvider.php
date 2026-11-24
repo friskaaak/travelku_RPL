@@ -10,6 +10,7 @@ use App\Support\PaymentMode;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+
+    if (str_contains(request()->getHost(), 'ngrok') || request()->header('X-Forwarded-Proto') === 'https') {
+        URL::forceScheme('https');
+    }
         // Tombol halaman memakai gaya Bootstrap 5.
         Paginator::useBootstrapFive();
 

@@ -15,6 +15,7 @@
         <a href="{{ route('home') }}">Beranda</a> /
         <a href="{{ route('holds.show', $hold->hold_code) }}">Penahanan</a> / Checkout
     </nav>
+    <x-stepper :step="2" />
 
     <h1 class="h4 mb-3">Checkout</h1>
 

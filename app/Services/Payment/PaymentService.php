@@ -25,23 +25,26 @@ class PaymentService
     }
 
     /** Daftar metode per kategori beserta biaya yang dihitung SERVER untuk total tertentu. */
-    public function catalog(int $baseTotal): array
+       public function catalog(int $baseTotal): array
     {
         $out = [];
 
         foreach (config('payment.categories') as $key => $category) {
             $methods = [];
             foreach (config('payment.methods') as $code => $m) {
-                if ($m['category'] === $key) {
+                if ($m['category'] === $key && PaymentMode::isEnabled($code)) {
                     $methods[$code] = ['label' => $m['label'], 'fee' => PaymentMode::fee($code, $baseTotal)];
                 }
             }
-            $out[$key] = $category + ['methods' => $methods];
+
+            if ($methods) {
+                $out[$key] = $category + ['methods' => $methods];
+            }
         }
 
         return $out;
     }
-
+    
     /**
      * Buat tagihan Pending untuk sebuah booking. Panggil DI DALAM transaksi.
      */

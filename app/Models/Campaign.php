@@ -59,13 +59,14 @@ class Campaign extends Model
     }
 
     /** Gambar unggahan (dengan lapisan gelap agar teks terbaca) atau gradien bawaan. */
+        /** Gambar unggahan (dengan lapisan gelap agar teks terbaca) atau gradien bawaan. */
     public function bannerStyle(): string
     {
         if ($url = $this->bannerUrl()) {
-            return "background:linear-gradient(rgba(16,24,40,.25),rgba(16,24,40,.75)),url('{$url}') center/cover no-repeat";
+            return "background:linear-gradient(rgba(19,13,31,.25),rgba(19,13,31,.78)),url('{$url}') center/cover no-repeat";
         }
 
-        $palette = [['#155EEF', '#7A5AF8'], ['#067647', '#47CD89'], ['#B54708', '#FDB022'], ['#1247B8', '#53B1FD'], ['#7A5AF8', '#B692F6']];
+        $palette = [['#7C3AED', '#4C1D95'], ['#B45309', '#7C2D12'], ['#6D28D9', '#312E81'], ['#9A3412', '#581C87'], ['#0F766E', '#134E4A']];
         [$a, $b] = $palette[abs(crc32((string) $this->slug)) % count($palette)];
 
         return "background:linear-gradient(135deg,{$a},{$b})";

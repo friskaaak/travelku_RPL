@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use App\Services\Booking\DocumentService;
+use App\Services\Payment\MidtransProvider;
+use App\Services\Payment\PaymentProviderInterface;
 
 class PaymentController extends Controller
 {
@@ -74,6 +76,41 @@ class PaymentController extends Controller
         }
 
         return response()->json(['status' => $payment->fresh()->status]);
+    }
+
+        /** Tanya status ke Midtrans (cadangan bila webhook belum masuk). */
+    public function check(Payment $payment, PaymentProviderInterface $gateway)
+    {
+        Gate::authorize('view', $payment);
+        abort_unless(! PaymentMode::isDemo() && $gateway instanceof MidtransProvider && $payment->provider === 'midtrans', 404);
+
+        if ($payment->status !== Payment::PENDING) {
+            return redirect()->route('payments.show', $payment->payment_reference);
+        }
+
+        try {
+            $remote = $gateway->fetchStatus($payment->payment_reference);
+        } catch (PaymentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        if (! $remote) {
+            return back()->with('error', 'Midtrans belum mencatat pembayaran ini. Selesaikan pembayaran di DANA lebih dulu, lalu coba lagi.');
+        }
+
+        $status = $gateway->statusOf($remote);
+
+        if ($status === 'pending') {
+            return back()->with('success', 'Pembayaran belum selesai di sisi Midtrans atau DANA.');
+        }
+        if ($status === 'paid' && ! $gateway->confirmsPaid($remote, $payment)) {
+            return back()->with('error', 'Respons Midtrans tidak cocok dengan tagihan ini. Pembayaran belum dikonfirmasi.');
+        }
+
+        $eventId = ($remote['transaction_id'] ?? $payment->payment_reference).'|'.($remote['transaction_status'] ?? '').'|'.($remote['fraud_status'] ?? '');
+        $this->payments->handleResult($payment, $status, 'status_check', $eventId, $gateway->safe($remote));
+
+        return redirect()->route('payments.show', $payment->payment_reference);
     }
 
     public function change(Request $request, Payment $payment)

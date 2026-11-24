@@ -35,19 +35,7 @@
             <div class="text-md-end small">{{ $schedule->service_date->translatedFormat('l, d F Y') }}</div>
         </div>
 
-        <div class="row g-3 align-items-center">
-            <div class="col-5">
-                <div class="fs-3 fw-bold text-dark">{{ $schedule->departure_at->format('H:i') }}</div>
-                <div class="text-dark">{{ $schedule->origin->name }}</div>
-                <div class="small">{{ $schedule->origin->code }}</div>
-            </div>
-            <div class="col-2 text-center small">{{ \App\Support\Format::duration($schedule->duration_minutes) }}<hr class="my-1"></div>
-            <div class="col-5 text-end">
-                <div class="fs-3 fw-bold text-dark">{{ $schedule->arrival_at->format('H:i') }}@if ($dayShift > 0)<sup class="fs-6"> +{{ $dayShift }}</sup>@endif</div>
-                <div class="text-dark">{{ $schedule->destination->name }}</div>
-                <div class="small">{{ $schedule->destination->code }}</div>
-            </div>
-        </div>
+        <x-trip-line :dep="$schedule->departure_at" :arr="$schedule->arrival_at" :from="$schedule->origin->code" :to="$schedule->destination->code" :from-name="$schedule->origin->name" :to-name="$schedule->destination->name" :duration="$schedule->duration_minutes" />
         <p class="small mt-3 mb-0">Jam dalam WIB. Tarif {{ \App\Support\Money::idr($schedule->base_fare) }} per penumpang.
             @unless ($schedule->discount_eligible)<br>Tiket ini tidak termasuk program promo.@endunless</p>
     </div>

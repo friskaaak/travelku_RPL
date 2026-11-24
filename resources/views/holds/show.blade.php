@@ -21,6 +21,7 @@
     <nav aria-label="Jejak halaman" class="small mb-3">
         <a href="{{ route('home') }}">Beranda</a> / Penahanan {{ $hold->hold_code }}
     </nav>
+    <x-stepper :step="1" />
 
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
         <div>

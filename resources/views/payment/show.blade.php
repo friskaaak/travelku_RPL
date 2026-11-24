@@ -26,6 +26,7 @@
 
 <div class="container py-4">
     <nav aria-label="Jejak halaman" class="small mb-3"><a href="{{ route('home') }}">Beranda</a> / Pembayaran</nav>
+    <x-stepper :step="3" />
 
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
         <div>
@@ -104,6 +105,17 @@
 
                     @if ($payment->is_simulated && $flow)
                         <div class="tk-demo-note mb-3">{{ config('payment.demo_labels.'.$flow) }}</div>
+                    @endif
+
+                    @if ($payment->provider === 'midtrans')
+                        @if (! empty($payment->instructions['redirect_url']))
+                            <a href="{{ $payment->instructions['redirect_url'] }}" class="btn btn-primary btn-lg w-100 mb-2" rel="noopener">Bayar dengan DANA</a>
+                        @endif
+                        <form method="POST" action="{{ route('payments.check', $payment->payment_reference) }}" class="mb-2">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-secondary w-100">Saya sudah membayar, periksa status</button>
+                        </form>
+                        <p class="small">Status berubah otomatis setelah Midtrans mengonfirmasi pembayaran.@if (! config('payment.midtrans.is_production')) Mode sandbox: tidak ada uang sungguhan.@endif</p>
                     @endif
 
                     @if (in_array($flow, ['va', 'store', 'ewallet'], true) && $payment->payment_code)

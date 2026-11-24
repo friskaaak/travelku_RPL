@@ -16,8 +16,9 @@
 @endphp
 
 <div class="container py-4" style="max-width:920px">
+    <x-stepper :step="4" />
 
-    <div class="tk-card p-4 mb-3 text-center no-print" style="border-color:#ABEFC6">
+    <div class="tk-card tk-hero-success p-4 mb-3 text-center no-print">
         <i class="bi bi-check-circle-fill" style="font-size:3rem;color:#067647" aria-hidden="true"></i>
         <h1 class="h3 mt-2 mb-1" style="color:#067647">Pembayaran Berhasil</h1>
         <p class="mb-0">Pembayaran sebesar <strong>{{ \App\Support\Money::idr($pay['amount']) }}</strong> telah terverifikasi oleh server dan pesanan Anda <strong>terkonfirmasi</strong>.</p>

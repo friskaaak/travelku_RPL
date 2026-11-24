@@ -22,6 +22,14 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EmailDeliveryController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\EmailController as AdminEmailController;
+use App\Http\Controllers\Admin\HoldController as AdminHoldController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
+use App\Http\Controllers\Admin\HotelController as AdminHotelController;
+use App\Http\Controllers\Admin\RoomController as AdminRoomController;
+use App\Http\Controllers\Admin\ScheduleController as AdminScheduleController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -65,6 +73,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pesanan-saya', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/pesanan/{booking:booking_code}', [BookingController::class, 'show'])->name('bookings.show');
     Route::get('/pesanan/{booking:booking_code}/tiket/pdf', [BookingController::class, 'ticketsPdf'])->middleware('throttle:20,1')->name('bookings.tickets.pdf');
+    Route::post('/pesanan/{booking:booking_code}/batal', [BookingController::class, 'cancel'])->middleware('throttle:10,1')->name('bookings.cancel');
 
     Route::get('/struk/{receipt:receipt_number}', [ReceiptController::class, 'show'])->name('receipts.show');
     Route::get('/struk/{receipt:receipt_number}/pdf', [ReceiptController::class, 'pdf'])->middleware('throttle:20,1')->name('receipts.pdf');
@@ -86,12 +95,41 @@ Route::middleware('auth')->group(function () {
     Route::get('/pembayaran/{payment:payment_reference}/status', [PaymentController::class, 'status'])->middleware('throttle:60,1')->name('payments.status');
     Route::post('/pembayaran/{payment:payment_reference}/ganti', [PaymentController::class, 'change'])->middleware('throttle:10,1')->name('payments.change');
     Route::post('/pembayaran/{payment:payment_reference}/batal', [PaymentController::class, 'cancel'])->name('payments.cancel');
+    Route::post('/pembayaran/{payment:payment_reference}/periksa', [PaymentController::class, 'check'])->middleware('throttle:10,1')->name('payments.check');
     Route::post('/pembayaran/{payment:payment_reference}/simulasi', [PaymentSimulationController::class, 'store'])->middleware('throttle:20,1')->name('payments.simulate');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/audit', [AdminDashboardController::class, 'audit'])->name('admin.audit');
+    Route::get('/pesanan', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
+    Route::get('/pesanan/{booking}', [AdminBookingController::class, 'show'])->name('admin.bookings.show');
+    Route::post('/pesanan/{booking}/refund-diproses', [AdminBookingController::class, 'refundProcessed'])->name('admin.bookings.refund-processed');
+
+    Route::get('/pembayaran', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
+    Route::get('/pembayaran/{payment}', [AdminPaymentController::class, 'show'])->name('admin.payments.show');
+    Route::post('/pembayaran/{payment}/refund', [AdminPaymentController::class, 'refund'])->name('admin.payments.refund');
+
+    Route::get('/hotel', [AdminHotelController::class, 'index'])->name('admin.hotels.index');
+    Route::get('/hotel/buat', [AdminHotelController::class, 'create'])->name('admin.hotels.create');
+    Route::post('/hotel', [AdminHotelController::class, 'store'])->name('admin.hotels.store');
+    Route::get('/hotel/{hotel}/ubah', [AdminHotelController::class, 'edit'])->name('admin.hotels.edit');
+    Route::put('/hotel/{hotel}', [AdminHotelController::class, 'update'])->name('admin.hotels.update');
+    Route::post('/hotel/{hotel}/terbit', [AdminHotelController::class, 'toggle'])->name('admin.hotels.toggle');
+    Route::post('/hotel/{hotel}/kamar', [AdminRoomController::class, 'store'])->name('admin.rooms.store');
+    Route::put('/kamar/{room}', [AdminRoomController::class, 'update'])->name('admin.rooms.update');
+
+    Route::get('/jadwal/{kind}', [AdminScheduleController::class, 'index'])->where('kind', 'pesawat|kereta')->name('admin.schedules.index');
+    Route::get('/jadwal/{kind}/{id}/ubah', [AdminScheduleController::class, 'edit'])->where('kind', 'pesawat|kereta')->name('admin.schedules.edit');
+    Route::put('/jadwal/{kind}/{id}', [AdminScheduleController::class, 'update'])->where('kind', 'pesawat|kereta')->name('admin.schedules.update');
+
+    Route::get('/hold', [AdminHoldController::class, 'index'])->name('admin.holds.index');
+    Route::post('/hold/{hold}/lepas', [AdminHoldController::class, 'release'])->name('admin.holds.release');
+
+    Route::get('/tiket', [AdminTicketController::class, 'index'])->name('admin.tickets.index');
+
+    Route::get('/email', [AdminEmailController::class, 'index'])->name('admin.emails.index');
+    Route::post('/email/{delivery}/kirim-ulang', [AdminEmailController::class, 'resend'])->middleware('throttle:20,1')->name('admin.emails.resend');
 
     // ---- Diskon ----
     Route::get('/diskon', [AdminDiscountController::class, 'index'])->name('admin.discounts.index');

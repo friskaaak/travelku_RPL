@@ -5,26 +5,23 @@
 @section('content')
 <section class="tk-hero">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <h1>Satu aplikasi untuk hotel, pesawat, dan kereta.</h1>
-                <p class="fs-5 mb-0">Cari, pilih kamar atau kursi, bayar, dan terima e-tiket Anda. Semua dalam satu alur.</p>
-            </div>
-        </div>
+        <span class="tk-eyebrow"><i class="bi bi-stars" aria-hidden="true"></i>Hotel, pesawat, dan kereta dalam satu tempat</span>
+        <h1 class="mt-3 mb-3">Rencanakan perjalanan yang nyaman.</h1>
+        <p class="mb-0">Cari, pilih kamar atau kursi, bayar, lalu terima e-tiket Anda. Harga, diskon, dan total ditampilkan jelas sebelum Anda membayar.</p>
     </div>
 </section>
 
 <div class="container">
     <div class="tk-card tk-search">
-        <ul class="nav nav-pills mb-3" id="serviceTabs" role="tablist">
+        <ul class="nav tk-tabs" id="serviceTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-hotel" type="button" role="tab" aria-selected="true"><i class="bi bi-building me-1"></i>Hotel</button>
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-hotel" type="button" role="tab" aria-selected="true"><i class="bi bi-building me-1" aria-hidden="true"></i>Hotel</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-flight" type="button" role="tab" aria-selected="false"><i class="bi bi-airplane me-1"></i>Pesawat</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-flight" type="button" role="tab" aria-selected="false"><i class="bi bi-airplane me-1" aria-hidden="true"></i>Pesawat</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-train" type="button" role="tab" aria-selected="false"><i class="bi bi-train-front me-1"></i>Kereta</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-train" type="button" role="tab" aria-selected="false"><i class="bi bi-train-front me-1" aria-hidden="true"></i>Kereta</button>
             </li>
         </ul>
 
@@ -58,7 +55,7 @@
                         <label for="hotel_rooms" class="form-label">Kamar</label>
                         <input type="number" id="hotel_rooms" name="rooms" class="form-control" min="1" max="5" value="1" required>
                     </div>
-                    <div class="col-lg-2 col-12"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i>Cari Hotel</button></div>
+                    <div class="col-lg-2 col-12"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Cari Hotel</button></div>
                 </form>
             </div>
 
@@ -89,7 +86,7 @@
                         <label for="flight_class" class="form-label">Kelas</label>
                         <select id="flight_class" name="cabin" class="form-select"><option>Economy</option><option>Business</option></select>
                     </div>
-                    <div class="col-lg-2 col-12"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i>Cari Pesawat</button></div>
+                    <div class="col-lg-2 col-12"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Cari Pesawat</button></div>
                 </form>
             </div>
 
@@ -116,7 +113,7 @@
                         <label for="train_pax" class="form-label">Penumpang</label>
                         <input type="number" id="train_pax" name="passengers" class="form-control" min="1" max="4" value="1" required>
                     </div>
-                    <div class="col-lg-2 col-12"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1"></i>Cari Kereta</button></div>
+                    <div class="col-lg-2 col-12"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-1" aria-hidden="true"></i>Cari Kereta</button></div>
                 </form>
             </div>
         </div>
@@ -124,33 +121,33 @@
 </div>
 
 {{-- KAMPANYE AKTIF (dari database, waktu server) --}}
-<section class="container mt-5" aria-labelledby="promo-title">
+<section class="container mt-5 pt-3" aria-labelledby="promo-title">
     <div class="d-flex justify-content-between align-items-end mb-3">
-        <h2 id="promo-title" class="h4 mb-0">Promo yang sedang berlangsung</h2>
-        <a href="{{ route('campaigns.index') }}" class="fw-semibold text-decoration-none">Lihat semua <i class="bi bi-arrow-right"></i></a>
+        <h2 id="promo-title" class="tk-section-title">Promo yang sedang berlangsung</h2>
+        <a href="{{ route('campaigns.index') }}" class="tk-section-link">Lihat semua <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
     </div>
 
     @forelse ($campaigns as $c)
         @if ($loop->first)<div class="row g-3">@endif
         <div class="col-md-6 col-lg-4">
-            <a href="{{ route('campaigns.show', $c->slug) }}" class="tk-banner text-decoration-none" style="{{ $c->bannerStyle() }}">
+            <a href="{{ route('campaigns.show', $c->slug) }}" class="tk-banner h-100" style="{{ $c->bannerStyle() }}">
                 @if ($c->badge)<span class="tk-badge">{{ $c->badge }}</span>@endif
                 <h3 class="h5">{{ $c->name }}</h3>
-                <p class="mb-1 small">{{ \Illuminate\Support\Str::limit($c->description, 90) }}</p>
-                <small class="opacity-75"><i class="bi bi-clock me-1"></i>Berakhir {{ $c->ends_at->translatedFormat('d F Y') }}</small>
+                <p class="mb-1 small" style="color:rgba(255,255,255,.88)">{{ \Illuminate\Support\Str::limit($c->description, 90) }}</p>
+                <small style="color:rgba(255,255,255,.78)"><i class="bi bi-clock me-1" aria-hidden="true"></i>Berakhir {{ $c->ends_at->translatedFormat('d F Y') }}</small>
             </a>
         </div>
         @if ($loop->last)</div>@endif
     @empty
         <div class="tk-empty">
-            <i class="bi bi-tags fs-2 text-secondary"></i>
+            <i class="bi bi-tags fs-2" style="color:var(--text-muted)" aria-hidden="true"></i>
             <p class="mb-0 mt-2">Belum ada promo yang aktif saat ini. Kunjungi lagi nanti.</p>
         </div>
     @endforelse
 
     @if ($upcoming->isNotEmpty())
         <div class="mt-3 small">
-            <strong>Segera hadir:</strong>
+            <strong class="text-dark">Segera hadir:</strong>
             @foreach ($upcoming as $u)
                 {{ $u->name }} (mulai {{ $u->starts_at->translatedFormat('d F Y') }})@if(! $loop->last), @endif
             @endforeach
@@ -158,15 +155,47 @@
     @endif
 </section>
 
+{{-- REKOMENDASI HOTEL (dari database) --}}
+@if ($featuredHotels->isNotEmpty())
+<section class="container mt-5" aria-labelledby="hotel-title">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <h2 id="hotel-title" class="tk-section-title">Rekomendasi hotel</h2>
+        <a href="{{ route('hotels.index') }}" class="tk-section-link">Lihat semua hotel <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+    <div class="row g-3">
+        @foreach ($featuredHotels as $h)
+            <div class="col-md-6 col-lg-4">
+                <a href="{{ route('hotels.show', $h->slug) }}" class="tk-hotel-card">
+                    <div class="tk-hotel-img"><x-hotel-image :image="$h->images[0] ?? null" height="190px" /></div>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <h3>{{ $h->name }}</h3>
+                                <div class="small mt-1"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ $h->city }}</div>
+                            </div>
+                            <span class="badge tk-badge-info tk-mono"><i class="bi bi-star-fill me-1" aria-hidden="true"></i>{{ number_format($h->rating, 1, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end mt-3">
+                            <span class="small">mulai dari</span>
+                            <span><span class="tk-price" style="font-size:1.2rem">{{ \App\Support\Money::idr($h->min_price) }}</span> <span class="small">/ malam</span></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        @endforeach
+    </div>
+</section>
+@endif
+
 {{-- DESTINASI --}}
 <section class="container mt-5" aria-labelledby="dest-title">
-    <h2 id="dest-title" class="h4 mb-3">Destinasi populer</h2>
+    <h2 id="dest-title" class="tk-section-title mb-3">Destinasi populer</h2>
     <div class="row g-3">
-        @foreach ($destinations as [$name, $tag, $icon, $bg])
+        @foreach ($destinations as [$name, $tag, $icon])
             <div class="col-6 col-lg">
-                <a class="tk-dest" style="background: {{ $bg }}" href="{{ route('hotels.index', ['destination' => $name]) }}">
-                    <i class="bi {{ $icon }}"></i>
-                    <h5>{{ $name }}</h5>
+                <a class="tk-dest" href="{{ route('hotels.index', ['destination' => $name]) }}">
+                    <span class="tk-dest-icon"><i class="bi {{ $icon }}" aria-hidden="true"></i></span>
+                    <h3>{{ $name }}</h3>
                     <small>{{ $tag }}</small>
                 </a>
             </div>
@@ -176,7 +205,7 @@
 
 {{-- KEUNGGULAN --}}
 <section class="container mt-5" aria-labelledby="why-title">
-    <h2 id="why-title" class="h4 mb-3">Kenapa memesan di sini?</h2>
+    <h2 id="why-title" class="tk-section-title mb-3">Kenapa memesan di sini?</h2>
     <div class="row g-3">
         @foreach ([
             ['bi-shield-check', 'Anti pesan ganda', 'Kamar dan kursi dikunci sementara saat Anda checkout, sehingga tidak bisa dipesan orang lain.'],
@@ -185,9 +214,9 @@
             ['bi-ticket-perforated', 'E-tiket dan voucher', 'Tiket pesawat, kereta, dan voucher hotel tersedia untuk dilihat dan diunduh.'],
         ] as [$icon, $title, $text])
             <div class="col-md-6 col-lg-3">
-                <div class="tk-card tk-feature p-3 h-100">
-                    <i class="bi {{ $icon }}"></i>
-                    <h3 class="h6 mt-2">{{ $title }}</h3>
+                <div class="tk-card tk-feature">
+                    <span class="tk-feature-icon"><i class="bi {{ $icon }}" aria-hidden="true"></i></span>
+                    <h3 class="h6">{{ $title }}</h3>
                     <p class="small mb-0">{{ $text }}</p>
                 </div>
             </div>

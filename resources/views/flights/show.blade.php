@@ -36,21 +36,7 @@
             <div class="text-md-end small">{{ $schedule->service_date->translatedFormat('l, d F Y') }}</div>
         </div>
 
-        <div class="row g-3 align-items-center">
-            <div class="col-5">
-                <div class="fs-3 fw-bold text-dark">{{ $schedule->departure_at->format('H:i') }}</div>
-                <div class="text-dark">{{ $flight->origin->iata }}</div>
-                <div class="small">{{ $flight->origin->name }}</div>
-            </div>
-            <div class="col-2 text-center small">
-                {{ \App\Support\Format::duration($flight->duration_minutes) }}<hr class="my-1">{{ $flight->is_direct ? 'Langsung' : 'Transit' }}
-            </div>
-            <div class="col-5 text-end">
-                <div class="fs-3 fw-bold text-dark">{{ $schedule->arrival_at->format('H:i') }}@if ($dayShift > 0)<sup class="fs-6"> +{{ $dayShift }}</sup>@endif</div>
-                <div class="text-dark">{{ $flight->destination->iata }}</div>
-                <div class="small">{{ $flight->destination->name }}</div>
-            </div>
-        </div>
+        <x-trip-line :dep="$schedule->departure_at" :arr="$schedule->arrival_at" :from="$flight->origin->iata" :to="$flight->destination->iata" :from-name="$flight->origin->name" :to-name="$flight->destination->name" :duration="$flight->duration_minutes" :note="$flight->is_direct ? 'Langsung' : 'Transit'" />
         <p class="small mt-3 mb-0">Jam ditampilkan dalam WIB. Bagasi {{ $flight->baggage_kg }} kg, bagasi kabin {{ $flight->cabin_baggage_kg }} kg.
             @if ($flight->connection_note)<br><span style="color:#B54708">{{ $flight->connection_note }}</span>@endif</p>
     </div>
