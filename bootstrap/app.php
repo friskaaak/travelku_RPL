@@ -18,8 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
             // Webhook dari penyedia pembayaran tidak membawa token CSRF. Keamanannya lewat tanda tangan.
         $middleware->validateCsrfTokens(except: ['webhook/*']);
     })
+
+    ->withMiddleware(function (Middleware $middleware) {
+    $middleware->validateCsrfTokens(except: [
+        'midtrans/notification',   // sesuaikan dengan route kamu
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();
+
+
+    

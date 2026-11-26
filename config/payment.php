@@ -15,10 +15,13 @@ return [
 
     'currency' => 'IDR',
         // Hanya dipakai saat PAYMENT_MODE=production dan PAYMENT_PROVIDER=midtrans.
-    'midtrans' => [
+        'midtrans' => [
         'server_key' => env('MIDTRANS_SERVER_KEY'),
         'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
+        // true = webhook sukses WAJIB dikonfirmasi ke API status (lebih ketat). false = cadangan tanda tangan webhook.
+        'strict_confirm' => (bool) env('MIDTRANS_STRICT_CONFIRM', false),
     ],
+    
 
     // Metode yang aktif saat PAYMENT_MODE bukan demo.
     'live_methods' => ['dana'],

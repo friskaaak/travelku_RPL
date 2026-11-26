@@ -16,6 +16,7 @@ use Illuminate\Validation\Rule;
 use App\Services\Booking\DocumentService;
 use App\Services\Payment\MidtransProvider;
 use App\Services\Payment\PaymentProviderInterface;
+use Illuminate\Support\Facades\Cache;
 
 class PaymentController extends Controller
 {
@@ -26,6 +27,8 @@ class PaymentController extends Controller
     public function show(Payment $payment)
     {
         Gate::authorize('view', $payment);
+        $this->syncFromGateway($payment);
+        $payment->refresh();
 
         $booking = $payment->booking;
         $hold = $booking->hold;
@@ -69,6 +72,7 @@ class PaymentController extends Controller
     public function status(Payment $payment)
     {
         Gate::authorize('view', $payment);
+        $this->syncFromGateway($payment);
 
         $booking = $payment->booking;
         if ($booking->hold && $booking->status === Booking::PENDING) {
@@ -79,38 +83,73 @@ class PaymentController extends Controller
     }
 
         /** Tanya status ke Midtrans (cadangan bila webhook belum masuk). */
-    public function check(Payment $payment, PaymentProviderInterface $gateway)
+        /** Tombol "periksa status". Menanyakan ke Midtrans tanpa menunggu webhook. */
+    public function check(Payment $payment)
     {
         Gate::authorize('view', $payment);
-        abort_unless(! PaymentMode::isDemo() && $gateway instanceof MidtransProvider && $payment->provider === 'midtrans', 404);
 
-        if ($payment->status !== Payment::PENDING) {
-            return redirect()->route('payments.show', $payment->payment_reference);
+        $r = $this->syncFromGateway($payment, true);
+
+        $msg = match ($r['state']) {
+            'not_found' => ['error', 'Midtrans belum menemukan transaksi lewat nomor order. Untuk DANA, id transaksi baru diketahui setelah notifikasi dari Midtrans masuk. Pastikan ngrok berjalan dan Payment Notification URL benar, atau pulihkan manual dengan: php artisan payments:confirm '.$payment->payment_reference],
+            'pending' => ['success', 'Pembayaran belum selesai di sisi Midtrans atau DANA.'],
+            'mismatch' => ['error', 'Respons Midtrans tidak cocok dengan tagihan ini (nominal atau order berbeda). Pembayaran belum dikonfirmasi.'],
+            'error' => ['error', $r['message'] ?? 'Gagal memeriksa status.'],
+            default => null,
+        };
+
+        if ($msg) {
+            return back()->with($msg[0], $msg[1]);
+        }
+
+        return redirect()->route('payments.show', $payment->payment_reference);
+    }
+
+    /**
+     * Sinkronkan status tagihan Pending dari Midtrans. Dipanggil saat halaman dibuka,
+     * saat polling status, dan oleh tombol. Dibatasi sekali per 8 detik kecuali $force.
+     *
+     * @return array{state: string, message?: string}  none|not_found|pending|mismatch|applied|error
+     */
+    private function syncFromGateway(Payment $payment, bool $force = false): array
+    {
+        $gateway = app(PaymentProviderInterface::class);
+
+        if (PaymentMode::isDemo() || ! $gateway instanceof MidtransProvider
+            || $payment->provider !== 'midtrans' || $payment->status !== Payment::PENDING) {
+            return ['state' => 'none'];
+        }
+
+        if (! $force && ! Cache::add('midtrans-sync:'.$payment->id, 1, 8)) {
+            return ['state' => 'none'];
         }
 
         try {
-            $remote = $gateway->fetchStatus($payment->payment_reference);
+            $remote = $gateway->lookup([$payment->payment_reference, $payment->provider_reference]);
         } catch (PaymentException $e) {
-            return back()->with('error', $e->getMessage());
+            return ['state' => 'error', 'message' => $e->getMessage()];
         }
 
         if (! $remote) {
-            return back()->with('error', 'Midtrans belum mencatat pembayaran ini. Selesaikan pembayaran di DANA lebih dulu, lalu coba lagi.');
+            return ['state' => 'not_found'];
+        }
+
+        if (! empty($remote['transaction_id']) && ! $payment->provider_reference) {
+            $payment->update(['provider_reference' => $remote['transaction_id']]);
         }
 
         $status = $gateway->statusOf($remote);
-
         if ($status === 'pending') {
-            return back()->with('success', 'Pembayaran belum selesai di sisi Midtrans atau DANA.');
+            return ['state' => 'pending'];
         }
-        if ($status === 'paid' && ! $gateway->confirmsPaid($remote, $payment)) {
-            return back()->with('error', 'Respons Midtrans tidak cocok dengan tagihan ini. Pembayaran belum dikonfirmasi.');
+        if ($status === 'paid' && ! $gateway->confirmsPaid($remote, $payment->fresh())) {
+            return ['state' => 'mismatch'];
         }
 
         $eventId = ($remote['transaction_id'] ?? $payment->payment_reference).'|'.($remote['transaction_status'] ?? '').'|'.($remote['fraud_status'] ?? '');
-        $this->payments->handleResult($payment, $status, 'status_check', $eventId, $gateway->safe($remote));
+        $this->payments->handleResult($payment->fresh(), $status, 'status_check', $eventId, $gateway->safe($remote));
 
-        return redirect()->route('payments.show', $payment->payment_reference);
+        return ['state' => 'applied'];
     }
 
     public function change(Request $request, Payment $payment)
